@@ -2,13 +2,14 @@ import Paddle from "./paddle.js";
 import Ball from "./ball.js";
 import InputHandler from "./input.js";
 
-import {buildLevel, level1} from "./levels.js";
+import {buildLevel, levels} from "./levels.js";
 
 const GAME_STATE = {
     PAUSED: 0,
     RUNNING: 1,
     MENU: 2,
-    GAMEOVER: 3
+    GAMEOVER: 3,
+    NEW_LEVEL: 4
 }
 
 export default class Game {
@@ -17,24 +18,27 @@ export default class Game {
         this.gameHeight = gameHeight;
         this.gameObjects = [];
         this.lives = 3;
+        this.bricks = [];
 
         this.gamestate = GAME_STATE.MENU;
         this.paddle = new Paddle(this);
         this.ball = new Ball(this);
         new InputHandler(this);
+
+        this.levels = levels;
+        this.currentLevel = 0;
     }
 
     start() {
-        if (this.gamestate !== GAME_STATE.MENU) return;
+        if (this.gamestate !== GAME_STATE.MENU && this.gamestate !== GAME_STATE.NEW_LEVEL) return;
 
         this.gamestate = GAME_STATE.RUNNING;
-
-        let bricks = buildLevel(this, level1);
+        this.ball.reset();
+        this.bricks = buildLevel(this, this.levels[this.currentLevel]);
 
         this.gameObjects = [
             this.ball,
-            this.paddle,
-            ...bricks
+            this.paddle
         ];
     }
 
@@ -46,52 +50,33 @@ export default class Game {
             || this.gamestate === GAME_STATE.GAMEOVER
         ) return;
 
-        this.gameObjects.forEach(object => object.update(deltaTime));
+        if (this.bricks.length === 0) {
+            this.currentLevel++;
+            this.gamestate = GAME_STATE.NEW_LEVEL;
+            this.start();
+        }
 
-        this.gameObjects = this.gameObjects.filter(obj => !obj.markedForDeletion)
+        [...this.gameObjects, ...this.bricks].forEach(object => object.update(deltaTime));
+
+        this.bricks = this.bricks.filter(obj => !obj.markedForDeletion)
     }
 
     draw(ctx) {
-        this.gameObjects.forEach(object => object.draw(ctx));
+        [...this.gameObjects, ...this.bricks].forEach(object => object.draw(ctx));
         ctx.font = "20px Arial";
         ctx.fillStyle = "black";
-        ctx.fillText(`Lives: ${this.lives}`,40, 20);
+        ctx.fillText(`Lives: ${this.lives}`, 40, 20);
 
         if (this.gamestate === GAME_STATE.PAUSED) {
-            ctx.rect(0, 0, this.gameWidth, this.gameHeight);
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            ctx.fill();
-
-            ctx.font = "30px Arial";
-            ctx.fillStyle = "white";
-            ctx.textAlign = "center";
-            ctx.fillText("PAUSED", this.gameWidth / 2, this.gameHeight / 2);
+            this.drawPause(ctx);
         }
 
         if (this.gamestate === GAME_STATE.MENU) {
-            ctx.rect(0, 0, this.gameWidth, this.gameHeight);
-            ctx.fillStyle = "rgba(0,0,0,1)";
-            ctx.fill();
-
-            ctx.font = "30px Arial";
-            ctx.fillStyle = "white";
-            ctx.textAlign = "center";
-            ctx.fillText("Press SPACEBAR to start!", this.gameWidth / 2, this.gameHeight / 2);
+            this.drawMenu(ctx);
         }
 
         if (this.gamestate === GAME_STATE.GAMEOVER) {
-            ctx.rect(0, 0, this.gameWidth, this.gameHeight);
-            ctx.fillStyle = "rgba(0,0,0,1)";
-            ctx.fill();
-
-            ctx.font = "30px Arial";
-            ctx.fillStyle = "white";
-            ctx.textAlign = "center";
-            ctx.fillText(
-                "GAMEOVER!",
-                this.gameWidth / 2,
-                this.gameHeight / 2
-            );
+            this.drawGameover(ctx);
         }
     }
 
@@ -101,5 +86,43 @@ export default class Game {
         } else {
             this.gamestate = GAME_STATE.PAUSED;
         }
+    }
+
+    // Draw functions
+    drawPause(ctx) {
+        ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fill();
+
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("PAUSED", this.gameWidth / 2, this.gameHeight / 2);
+    }
+
+    drawMenu(ctx) {
+        ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+        ctx.fillStyle = "rgba(0,0,0,1)";
+        ctx.fill();
+
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("Press SPACEBAR to start!", this.gameWidth / 2, this.gameHeight / 2);
+    }
+
+    drawGameover(ctx) {
+        ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+        ctx.fillStyle = "rgba(0,0,0,1)";
+        ctx.fill();
+
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText(
+            "GAMEOVER!",
+            this.gameWidth / 2,
+            this.gameHeight / 2
+        );
     }
 }
