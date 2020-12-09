@@ -16,6 +16,7 @@ export default class Game {
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
         this.gameObjects = [];
+        this.lives = 3;
 
         this.gamestate = GAME_STATE.MENU;
         this.paddle = new Paddle(this);
@@ -38,8 +39,12 @@ export default class Game {
     }
 
     update(deltaTime) {
+        if (this.lives === 0) this.gamestate = GAME_STATE.GAMEOVER;
+
         if (this.gamestate === GAME_STATE.PAUSED
-            || this.gamestate === GAME_STATE.MENU) return;
+            || this.gamestate === GAME_STATE.MENU
+            || this.gamestate === GAME_STATE.GAMEOVER
+        ) return;
 
         this.gameObjects.forEach(object => object.update(deltaTime));
 
@@ -48,6 +53,9 @@ export default class Game {
 
     draw(ctx) {
         this.gameObjects.forEach(object => object.draw(ctx));
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "black";
+        ctx.fillText(`Lives: ${this.lives}`,40, 20);
 
         if (this.gamestate === GAME_STATE.PAUSED) {
             ctx.rect(0, 0, this.gameWidth, this.gameHeight);
@@ -69,6 +77,21 @@ export default class Game {
             ctx.fillStyle = "white";
             ctx.textAlign = "center";
             ctx.fillText("Press SPACEBAR to start!", this.gameWidth / 2, this.gameHeight / 2);
+        }
+
+        if (this.gamestate === GAME_STATE.GAMEOVER) {
+            ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+            ctx.fillStyle = "rgba(0,0,0,1)";
+            ctx.fill();
+
+            ctx.font = "30px Arial";
+            ctx.fillStyle = "white";
+            ctx.textAlign = "center";
+            ctx.fillText(
+                "GAMEOVER!",
+                this.gameWidth / 2,
+                this.gameHeight / 2
+            );
         }
     }
 
