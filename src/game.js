@@ -155,7 +155,12 @@ export default class Game {
         );
     }
 
-    drawText() {
-        
+    /*drawText(ctx, bgStyles = {}, fontStyles = {}, textWrap = {}) {
+        let {bgColor = "rgba(0,0,0,1)"} = bgStyles;
+        let {fFamily = "30px Arial", fColor = "white"} = fontStyles;
+        let {tAligh = "center", tText = "empty", tPosition = {this.gameWidth / 2, this.gameHeight / 2}} = textWrap;
     }
+    bindFun() {
+        this.drawText.bind(this);
+    }*/
 }
