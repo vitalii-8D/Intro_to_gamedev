@@ -10,11 +10,15 @@ export function detectCollision(ball, gameObject) {
 
     if (bottomOfBall >= topOfObject
         && topOfBall <= bottomOfObject
-        && ball.position.x >= leftSideOfObject
-        && ball.position.x + ball.size <= rightSideOfObject
+        && ball.position.x + ball.size >= leftSideOfObject
+        && ball.position.x <= rightSideOfObject
     ) {
         return true;
     } else {
         return false;
     }
+}
+
+export function detectPaddleCollision(ball, paddle) {
+
 }

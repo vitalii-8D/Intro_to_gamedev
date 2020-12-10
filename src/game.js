@@ -9,7 +9,8 @@ const GAME_STATE = {
     RUNNING: 1,
     MENU: 2,
     GAMEOVER: 3,
-    NEW_LEVEL: 4
+    NEW_LEVEL: 4,
+    WIN: 5
 }
 
 export default class Game {
@@ -30,7 +31,12 @@ export default class Game {
     }
 
     start() {
-        if (this.gamestate !== GAME_STATE.MENU && this.gamestate !== GAME_STATE.NEW_LEVEL) return;
+        if (this.gamestate !== GAME_STATE.MENU && this.gamestate !== GAME_STATE.NEW_LEVEL && this.gamestate !== GAME_STATE.WIN) return;
+        if (this.gamestate === GAME_STATE.NEW_LEVEL && !this.levels[this.currentLevel]) {
+            this.gamestate = GAME_STATE.WIN;
+            this.currentLevel = 0;
+            return;
+        }
 
         this.gamestate = GAME_STATE.RUNNING;
         this.ball.reset();
@@ -44,6 +50,7 @@ export default class Game {
 
     update(deltaTime) {
         if (this.lives === 0) this.gamestate = GAME_STATE.GAMEOVER;
+        if (this.gamestate === GAME_STATE.WIN) return;
 
         if (this.gamestate === GAME_STATE.PAUSED
             || this.gamestate === GAME_STATE.MENU
@@ -77,6 +84,9 @@ export default class Game {
 
         if (this.gamestate === GAME_STATE.GAMEOVER) {
             this.drawGameover(ctx);
+        }
+        if (this.gamestate === GAME_STATE.WIN) {
+            this.drawWin(ctx);
         }
     }
 
@@ -124,5 +134,28 @@ export default class Game {
             this.gameWidth / 2,
             this.gameHeight / 2
         );
+    }
+    drawWin(ctx) {
+        ctx.rect(0, 0, this.gameWidth, this.gameHeight);
+        ctx.fillStyle = "rgba(20,240,20,0.5)";
+        ctx.fill();
+
+        ctx.font = "30px Arial";
+        ctx.fillStyle = "#444444";
+        ctx.textAlign = "center";
+        ctx.fillText(
+            "You win!",
+            this.gameWidth / 2,
+            this.gameHeight / 2
+        );
+        ctx.fillText(
+            "Press SPACEBAR to start NEW game",
+            this.gameWidth / 2,
+            this.gameHeight / 2 - 35
+        );
+    }
+
+    drawText() {
+        
     }
 }
